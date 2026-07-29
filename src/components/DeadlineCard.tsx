@@ -21,9 +21,8 @@ const RECURRENCE_LABELS: Record<string, string> = {
   NONE: "One time",
   DAILY: "Daily",
   WEEKLY: "Weekly",
-  TWICE_WEEKLY: "Twice a week",
+  MULTI_WEEKLY: "Multiple days a week",
   MONTHLY: "Monthly",
-  TWICE_MONTHLY: "Twice a month",
 };
 
 export function DeadlineCard({

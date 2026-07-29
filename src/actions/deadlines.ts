@@ -53,12 +53,10 @@ export async function createDeadline(_prevState: unknown, formData: FormData) {
       description: data.description || null,
       recurrenceType: data.recurrenceType,
       dueDate: data.recurrenceType === "NONE" ? toDueDateInput(data.dueDate) : null,
-      daysOfWeek: data.recurrenceType === "WEEKLY" || data.recurrenceType === "TWICE_WEEKLY"
+      daysOfWeek: data.recurrenceType === "WEEKLY" || data.recurrenceType === "MULTI_WEEKLY"
         ? data.daysOfWeek
         : [],
-      daysOfMonth: data.recurrenceType === "MONTHLY" || data.recurrenceType === "TWICE_MONTHLY"
-        ? data.daysOfMonth
-        : [],
+      daysOfMonth: data.recurrenceType === "MONTHLY" ? data.daysOfMonth : [],
       planId,
       userId: session.user.id,
     },
@@ -109,12 +107,10 @@ export async function updateDeadline(
       description: data.description || null,
       recurrenceType: data.recurrenceType,
       dueDate: data.recurrenceType === "NONE" ? toDueDateInput(data.dueDate) : null,
-      daysOfWeek: data.recurrenceType === "WEEKLY" || data.recurrenceType === "TWICE_WEEKLY"
+      daysOfWeek: data.recurrenceType === "WEEKLY" || data.recurrenceType === "MULTI_WEEKLY"
         ? data.daysOfWeek
         : [],
-      daysOfMonth: data.recurrenceType === "MONTHLY" || data.recurrenceType === "TWICE_MONTHLY"
-        ? data.daysOfMonth
-        : [],
+      daysOfMonth: data.recurrenceType === "MONTHLY" ? data.daysOfMonth : [],
       planId,
       // Recurrence anchors may have changed, so any previous "done"/"notified"
       // markers no longer refer to a meaningful period.

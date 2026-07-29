@@ -11,9 +11,8 @@ const recurrenceTypeSchema = z.enum([
   "NONE",
   "DAILY",
   "WEEKLY",
-  "TWICE_WEEKLY",
+  "MULTI_WEEKLY",
   "MONTHLY",
-  "TWICE_MONTHLY",
 ]);
 
 // daysOfWeek follows JS Date.getDay() convention: 0=Sunday..6=Saturday.
@@ -57,25 +56,13 @@ export const deadlineSchema = baseDeadlineSchema.superRefine((data, ctx) => {
       }
       break;
 
-    case "TWICE_WEEKLY": {
+    case "MULTI_WEEKLY": {
       const unique = new Set(data.daysOfWeek);
-      if (data.daysOfWeek.length !== 2 || unique.size !== 2) {
+      if (data.daysOfWeek.length < 2 || unique.size !== data.daysOfWeek.length) {
         ctx.addIssue({
           code: "custom",
           path: ["daysOfWeek"],
-          message: "Twice-weekly deadlines need exactly two distinct days.",
-        });
-      }
-      break;
-    }
-
-    case "TWICE_MONTHLY": {
-      const unique = new Set(data.daysOfMonth);
-      if (data.daysOfMonth.length !== 2 || unique.size !== 2) {
-        ctx.addIssue({
-          code: "custom",
-          path: ["daysOfMonth"],
-          message: "Twice-monthly deadlines need exactly two distinct days.",
+          message: "Multi-weekly deadlines need at least two distinct days.",
         });
       }
       break;

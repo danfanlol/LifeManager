@@ -60,13 +60,26 @@ describe("getEffectiveAnchorDate", () => {
     expect(anchor?.toISODate()).toBe(now.minus({ days: 2 }).toISODate());
   });
 
-  it("TWICE_WEEKLY picks the most recent of the two anchor days", () => {
+  it("MULTI_WEEKLY picks the most recent of two anchor days", () => {
     const now = DateTime.fromISO("2026-07-29", { zone: "America/Los_Angeles" });
     const todayJsWeekday = toJsWeekday(now.weekday);
     const fourDaysAgoJsWeekday = toJsWeekday(now.minus({ days: 4 }).weekday);
     const deadline = base({
-      recurrenceType: "TWICE_WEEKLY",
+      recurrenceType: "MULTI_WEEKLY",
       daysOfWeek: [todayJsWeekday, fourDaysAgoJsWeekday],
+    });
+    const anchor = getEffectiveAnchorDate(deadline, now);
+    expect(anchor?.toISODate()).toBe("2026-07-29");
+  });
+
+  it("MULTI_WEEKLY picks the most recent across more than two anchor days", () => {
+    const now = DateTime.fromISO("2026-07-29", { zone: "America/Los_Angeles" });
+    const todayJsWeekday = toJsWeekday(now.weekday);
+    const twoDaysAgoJsWeekday = toJsWeekday(now.minus({ days: 2 }).weekday);
+    const fourDaysAgoJsWeekday = toJsWeekday(now.minus({ days: 4 }).weekday);
+    const deadline = base({
+      recurrenceType: "MULTI_WEEKLY",
+      daysOfWeek: [todayJsWeekday, twoDaysAgoJsWeekday, fourDaysAgoJsWeekday],
     });
     const anchor = getEffectiveAnchorDate(deadline, now);
     expect(anchor?.toISODate()).toBe("2026-07-29");
@@ -101,15 +114,6 @@ describe("getEffectiveAnchorDate", () => {
     expect(anchor?.toISODate()).toBe("2026-06-30");
   });
 
-  it("TWICE_MONTHLY picks the most recent of two anchor days", () => {
-    const now = DateTime.fromISO("2026-07-20", { zone: "America/Los_Angeles" });
-    const anchor = getEffectiveAnchorDate(
-      base({ recurrenceType: "TWICE_MONTHLY", daysOfMonth: [1, 15] }),
-      now,
-    );
-    expect(anchor?.toISODate()).toBe("2026-07-15");
-  });
-
   it("resolves consistently for a user far across the International Date Line", () => {
     const now = DateTime.fromISO("2026-07-29T23:30:00", { zone: "Pacific/Kiritimati" });
     const anchor = getEffectiveAnchorDate(base({ recurrenceType: "DAILY" }), now);
@@ -140,7 +144,7 @@ describe("getNextAnchorDate", () => {
 });
 
 describe("periodKeyFor", () => {
-  it("gives distinct keys for two occurrences of a TWICE_WEEKLY deadline in the same week", () => {
+  it("gives distinct keys for two occurrences of a MULTI_WEEKLY deadline in the same week", () => {
     const monday = DateTime.fromISO("2026-07-27", { zone: "utc" });
     const thursday = DateTime.fromISO("2026-07-30", { zone: "utc" });
     expect(periodKeyFor(monday)).not.toBe(periodKeyFor(thursday));

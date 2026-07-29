@@ -81,9 +81,8 @@ enum RecurrenceType {
   NONE
   DAILY
   WEEKLY
-  TWICE_WEEKLY
+  MULTI_WEEKLY
   MONTHLY
-  TWICE_MONTHLY
 }
 
 model Plan {
@@ -110,11 +109,11 @@ model Deadline {
   dueDate DateTime?
 
   // recurring anchors. daysOfWeek uses JS Date.getDay() convention (0=Sun..6=Sat):
-  // WEEKLY needs exactly 1 entry, TWICE_WEEKLY exactly 2.
+  // WEEKLY needs exactly 1 entry, MULTI_WEEKLY needs 2 or more.
   daysOfWeek Int[] @default([])
 
   // daysOfMonth is 1-31, clamped to the last day of shorter months.
-  // MONTHLY needs exactly 1 entry, TWICE_MONTHLY exactly 2.
+  // MONTHLY needs exactly 1 entry.
   daysOfMonth Int[] @default([])
 
   isActive Boolean @default(true)

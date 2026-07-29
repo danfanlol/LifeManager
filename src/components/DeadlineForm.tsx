@@ -2,13 +2,7 @@
 
 import { useActionState, useState } from "react";
 
-type RecurrenceType =
-  | "NONE"
-  | "DAILY"
-  | "WEEKLY"
-  | "TWICE_WEEKLY"
-  | "MONTHLY"
-  | "TWICE_MONTHLY";
+type RecurrenceType = "NONE" | "DAILY" | "WEEKLY" | "MULTI_WEEKLY" | "MONTHLY";
 
 type DeadlineFormState =
   | { errors?: Record<string, string[] | undefined> }
@@ -104,9 +98,8 @@ export function DeadlineForm({
         >
           <option value="NONE">One time</option>
           <option value="DAILY">Daily</option>
-          <option value="TWICE_WEEKLY">Twice a week</option>
           <option value="WEEKLY">Weekly</option>
-          <option value="TWICE_MONTHLY">Twice a month</option>
+          <option value="MULTI_WEEKLY">Multiple days a week</option>
           <option value="MONTHLY">Monthly</option>
         </select>
       </label>
@@ -127,12 +120,12 @@ export function DeadlineForm({
         </label>
       )}
 
-      {(recurrenceType === "WEEKLY" || recurrenceType === "TWICE_WEEKLY") && (
+      {(recurrenceType === "WEEKLY" || recurrenceType === "MULTI_WEEKLY") && (
         <fieldset className="flex flex-col gap-1 text-sm">
           <legend>
             {recurrenceType === "WEEKLY"
               ? "Which day of the week"
-              : "Which two days of the week"}
+              : "Which days of the week (two or more)"}
           </legend>
           <div className="flex flex-wrap gap-3">
             {WEEKDAYS.map((day) => (
@@ -153,13 +146,9 @@ export function DeadlineForm({
         </fieldset>
       )}
 
-      {(recurrenceType === "MONTHLY" || recurrenceType === "TWICE_MONTHLY") && (
+      {recurrenceType === "MONTHLY" && (
         <fieldset className="flex flex-col gap-1 text-sm">
-          <legend>
-            {recurrenceType === "MONTHLY"
-              ? "Which day of the month"
-              : "Which two days of the month"}
-          </legend>
+          <legend>Which day of the month</legend>
           <p className="text-xs text-gray-500">
             If a chosen day doesn&apos;t exist in a given month, it falls on
             the last day of that month instead.

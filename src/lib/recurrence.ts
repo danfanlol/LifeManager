@@ -63,7 +63,7 @@ export function getEffectiveAnchorDate(
       return today;
 
     case "WEEKLY":
-    case "TWICE_WEEKLY": {
+    case "MULTI_WEEKLY": {
       const candidates = deadline.daysOfWeek
         .map((dow) => mostRecentWeekday(today, dow))
         .filter((d) => d <= today);
@@ -71,8 +71,7 @@ export function getEffectiveAnchorDate(
       return DateTime.max(...candidates) ?? null;
     }
 
-    case "MONTHLY":
-    case "TWICE_MONTHLY": {
+    case "MONTHLY": {
       const candidates = deadline.daysOfMonth
         .flatMap((dom) => [
           clampToMonth(today.minus({ months: 1 }), dom),
@@ -109,7 +108,7 @@ export function getNextAnchorDate(
       return today.plus({ days: 1 });
 
     case "WEEKLY":
-    case "TWICE_WEEKLY": {
+    case "MULTI_WEEKLY": {
       const candidates = deadline.daysOfWeek.map((dow) => {
         const recent = mostRecentWeekday(today, dow);
         return recent > today ? recent : recent.plus({ weeks: 1 });
@@ -118,8 +117,7 @@ export function getNextAnchorDate(
       return DateTime.min(...candidates) ?? null;
     }
 
-    case "MONTHLY":
-    case "TWICE_MONTHLY": {
+    case "MONTHLY": {
       const candidates = deadline.daysOfMonth.flatMap((dom) => [
         clampToMonth(today, dom),
         clampToMonth(today.plus({ months: 1 }), dom),
