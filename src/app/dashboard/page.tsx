@@ -42,7 +42,7 @@ function Section({ title, entries }: { title: string; entries: Entry[] }) {
 
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="text-sm font-medium text-gray-500">{title}</h2>
+      <h2 className="text-lg font-semibold text-gray-700 dark:text-gray-300">{title}</h2>
 
       {standalone.length > 0 && (
         <ul className="flex flex-col gap-2">
