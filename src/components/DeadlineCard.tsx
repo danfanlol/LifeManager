@@ -1,29 +1,8 @@
 import Link from "next/link";
 import { toggleComplete, deleteDeadline } from "@/actions/deadlines";
 import { DeleteButton } from "@/components/DeleteButton";
+import { STATUS_LABELS, STATUS_STYLES, RECURRENCE_LABELS } from "@/lib/deadline-display";
 import type { DeadlineStatus } from "@/lib/recurrence";
-
-const STATUS_STYLES: Record<DeadlineStatus["status"], string> = {
-  overdue: "text-red-600",
-  dueToday: "text-amber-600",
-  upcoming: "text-gray-500",
-  done: "text-green-600",
-};
-
-const STATUS_LABELS: Record<DeadlineStatus["status"], string> = {
-  overdue: "Overdue",
-  dueToday: "Due today",
-  upcoming: "Upcoming",
-  done: "Done",
-};
-
-const RECURRENCE_LABELS: Record<string, string> = {
-  NONE: "One time",
-  DAILY: "Daily",
-  WEEKLY: "Weekly",
-  MULTI_WEEKLY: "Multiple days a week",
-  MONTHLY: "Monthly",
-};
 
 export function DeadlineCard({
   deadline,
@@ -59,7 +38,9 @@ export function DeadlineCard({
         </form>
 
         <div>
-          <p className="font-medium">{deadline.title}</p>
+          <Link href={`/deadlines/${deadline.id}`} className="font-medium hover:underline">
+            {deadline.title}
+          </Link>
           {deadline.description && (
             <p className="text-sm text-gray-500">{deadline.description}</p>
           )}
