@@ -1,0 +1,16 @@
+{
+  "name": "LifeManager",
+  "short_name": "LifeManager",
+  "description": "Track deadlines and plans you shouldn't forget.",
+  "start_url": "/dashboard",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#111827",
+  "icons": [
+    {
+      "src": "/next.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ]
+}

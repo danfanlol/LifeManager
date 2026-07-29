@@ -16,6 +16,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "LifeManager",
   description: "Track deadlines and plans you shouldn't forget.",
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({

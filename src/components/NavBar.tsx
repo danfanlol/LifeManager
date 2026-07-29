@@ -10,8 +10,8 @@ export async function NavBar() {
 
   return (
     <header className="border-b border-gray-200 dark:border-gray-800">
-      <div className="mx-auto flex w-full max-w-2xl items-center justify-between px-4 py-3">
-        <nav className="flex items-center gap-4 text-sm">
+      <div className="mx-auto flex w-full max-w-2xl flex-wrap items-center justify-between gap-2 px-4 py-3">
+        <nav className="flex flex-wrap items-center gap-4 text-sm">
           <Link href="/dashboard" className="font-medium">
             LifeManager
           </Link>
