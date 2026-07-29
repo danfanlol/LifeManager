@@ -1,5 +1,5 @@
 import { DateTime } from "luxon";
-import type { RecurrenceType } from "@/generated/prisma/enums";
+import type { RecurrenceType } from "@/generated/prisma";
 
 export type DeadlineRecurrence = {
   recurrenceType: RecurrenceType;
