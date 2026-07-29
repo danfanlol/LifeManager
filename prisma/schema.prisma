@@ -1,0 +1,152 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+// ---------------------------------------------------------------------------
+// Better Auth models (email + password accounts). Field shapes follow what
+// `npx @better-auth/cli generate` produces; timezone is a custom addition
+// registered as a Better Auth `additionalFields` entry in src/lib/auth.ts.
+// ---------------------------------------------------------------------------
+
+model User {
+  id            String   @id @default(cuid())
+  name          String?
+  email         String   @unique
+  emailVerified Boolean  @default(false)
+  image         String?
+  timezone      String   @default("UTC")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  sessions          Session[]
+  accounts          Account[]
+  plans             Plan[]
+  deadlines         Deadline[]
+  pushSubscriptions PushSubscription[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  ipAddress String?
+  userAgent String?
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Account {
+  id           String    @id @default(cuid())
+  userId       String
+  accountId    String
+  providerId   String
+  password     String?
+  accessToken  String?
+  refreshToken String?
+  expiresAt    DateTime?
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Verification {
+  id         String   @id @default(cuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+}
+
+// ---------------------------------------------------------------------------
+// Domain models
+// ---------------------------------------------------------------------------
+
+enum RecurrenceType {
+  NONE
+  DAILY
+  WEEKLY
+  TWICE_WEEKLY
+  MONTHLY
+  TWICE_MONTHLY
+}
+
+model Plan {
+  id          String     @id @default(cuid())
+  name        String
+  description String?
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deadlines   Deadline[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([userId])
+}
+
+model Deadline {
+  id             String         @id @default(cuid())
+  title          String
+  description    String?
+  recurrenceType RecurrenceType
+
+  // one-time only (recurrenceType = NONE): a specific calendar date, stored
+  // as UTC midnight of that date. Never carries a time-of-day.
+  dueDate DateTime?
+
+  // recurring anchors. daysOfWeek uses JS Date.getDay() convention (0=Sun..6=Sat):
+  // WEEKLY needs exactly 1 entry, TWICE_WEEKLY exactly 2.
+  daysOfWeek Int[] @default([])
+
+  // daysOfMonth is 1-31, clamped to the last day of shorter months.
+  // MONTHLY needs exactly 1 entry, TWICE_MONTHLY exactly 2.
+  daysOfMonth Int[] @default([])
+
+  isActive Boolean @default(true)
+
+  // "current period only" completion tracking: overwritten each period
+  // rather than accumulated in a history table (no streak/history feature).
+  lastCompletedPeriodKey String?
+  lastCompletedAt        DateTime?
+
+  // Push-notification dedupe, same overwrite-per-period pattern (no log table).
+  lastNotifiedPeriodKey String?
+
+  planId String?
+  plan   Plan?   @relation(fields: [planId], references: [id], onDelete: SetNull)
+  userId String
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([planId])
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
