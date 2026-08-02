@@ -37,6 +37,7 @@ model User {
   plans             Plan[]
   deadlines         Deadline[]
   pushSubscriptions PushSubscription[]
+  hourLogs          HourLog[]
 }
 
 model Session {
@@ -149,4 +150,23 @@ model PushSubscription {
   createdAt DateTime @default(now())
 
   @@index([userId])
+}
+
+// One freeform note per hour of a calendar day ("what did I do at 3pm").
+// `date` is a calendar date, not an instant — stored as UTC midnight of that
+// date, same convention as Deadline.dueDate. `hour` is 0-23, a plain label
+// for a slot within that already-established day (no timezone conversion
+// needed on top of it).
+model HourLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      DateTime
+  hour      Int
+  note      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, date, hour])
+  @@index([userId, date])
 }

@@ -21,6 +21,9 @@ export async function NavBar() {
           <Link href="/plans" className="text-gray-500 hover:text-gray-900 dark:hover:text-gray-100">
             Plans
           </Link>
+          <Link href="/calendar" className="text-gray-500 hover:text-gray-900 dark:hover:text-gray-100">
+            Calendar
+          </Link>
           <Link href="/settings" className="text-gray-500 hover:text-gray-900 dark:hover:text-gray-100">
             Settings
           </Link>
