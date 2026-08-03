@@ -6,7 +6,7 @@ import { requireSession } from "@/lib/session";
 import { withStatus } from "@/lib/recurrence";
 import { DeadlineCard } from "@/components/DeadlineCard";
 import { DeleteButton } from "@/components/DeleteButton";
-import { deletePlan } from "@/actions/plans";
+import { deletePlan, resolvePlan, unresolvePlan } from "@/actions/plans";
 
 export default async function PlanDetailPage({
   params,
@@ -37,11 +37,19 @@ export default async function PlanDetailPage({
           {plan.description && (
             <p className="text-sm text-gray-500">{plan.description}</p>
           )}
+          {plan.resolvedAt && (
+            <p className="text-xs text-gray-400">Resolved</p>
+          )}
         </div>
         <div className="flex items-center gap-3">
           <Link href={`/plans/${plan.id}/edit`} className="text-sm underline">
             Edit
           </Link>
+          <form action={(plan.resolvedAt ? unresolvePlan : resolvePlan).bind(null, plan.id)}>
+            <button type="submit" className="text-sm underline">
+              {plan.resolvedAt ? "Unresolve" : "Resolve"}
+            </button>
+          </form>
           <DeleteButton
             action={deletePlan.bind(null, plan.id)}
             confirmMessage={`Delete "${plan.name}" and remove it from its deadlines?`}

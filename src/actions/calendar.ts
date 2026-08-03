@@ -5,24 +5,20 @@ import { prisma } from "@/lib/prisma";
 import { requireSession } from "@/lib/session";
 import { calendarDateToUtcMidnight } from "@/lib/calendar";
 
-export async function saveHourNote(
-  dateParam: string,
-  hour: number,
-  formData: FormData,
-) {
+export async function saveHourNote(dateParam: string, hour: number, note: string) {
   const session = await requireSession();
-  const note = String(formData.get("note") ?? "").trim();
+  const trimmed = note.trim();
   const date = calendarDateToUtcMidnight(dateParam);
 
-  if (!note) {
+  if (!trimmed) {
     await prisma.hourLog.deleteMany({
       where: { userId: session.user.id, date, hour },
     });
   } else {
     await prisma.hourLog.upsert({
       where: { userId_date_hour: { userId: session.user.id, date, hour } },
-      create: { userId: session.user.id, date, hour, note },
-      update: { note },
+      create: { userId: session.user.id, date, hour, note: trimmed },
+      update: { note: trimmed },
     });
   }
 

@@ -36,6 +36,7 @@ export function DeadlineForm({
     description: string | null;
     recurrenceType: RecurrenceType;
     dueDate: string | null; // yyyy-MM-dd
+    dueTime: string | null; // HH:mm
     daysOfWeek: number[];
     daysOfMonth: number[];
     planId: string | null;
@@ -119,6 +120,19 @@ export function DeadlineForm({
           )}
         </label>
       )}
+
+      <label className="flex flex-col gap-1 text-sm">
+        Time of day (optional)
+        <input
+          type="time"
+          name="dueTime"
+          className="rounded border border-gray-300 px-3 py-2 dark:border-gray-700 dark:bg-gray-900"
+          defaultValue={defaultValues?.dueTime ?? ""}
+        />
+        {state?.errors?.dueTime && (
+          <span className="text-sm text-red-600">{state.errors.dueTime[0]}</span>
+        )}
+      </label>
 
       {(recurrenceType === "WEEKLY" || recurrenceType === "MULTI_WEEKLY") && (
         <fieldset className="flex flex-col gap-1 text-sm">

@@ -90,6 +90,7 @@ model Plan {
   id          String     @id @default(cuid())
   name        String
   description String?
+  resolvedAt  DateTime?
   userId      String
   user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   deadlines   Deadline[]
@@ -108,6 +109,10 @@ model Deadline {
   // one-time only (recurrenceType = NONE): a specific calendar date, stored
   // as UTC midnight of that date. Never carries a time-of-day.
   dueDate DateTime?
+
+  // Optional wall-clock time the deadline is due at, "HH:mm" (24-hour), independent
+  // of timezone/date math — applies to any recurrence type.
+  dueTime String?
 
   // recurring anchors. daysOfWeek uses JS Date.getDay() convention (0=Sun..6=Sat):
   // WEEKLY needs exactly 1 entry, MULTI_WEEKLY needs 2 or more.

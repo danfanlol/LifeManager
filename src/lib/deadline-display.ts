@@ -60,3 +60,8 @@ export function formatRecurrenceDetail(deadline: {
 export function formatDueDate(dueDate: Date): string {
   return DateTime.fromJSDate(dueDate, { zone: "utc" }).toFormat("MMMM d, yyyy");
 }
+
+/** Formats a `dueTime` ("HH:mm" wall-clock string) for display, e.g. "2:30 PM". */
+export function formatDueTime(dueTime: string): string {
+  return DateTime.fromFormat(dueTime, "HH:mm").toFormat("h:mm a");
+}

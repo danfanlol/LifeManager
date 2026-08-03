@@ -21,6 +21,11 @@ const baseDeadlineSchema = z.object({
   description: z.string().trim().max(2000).optional().or(z.literal("")),
   recurrenceType: recurrenceTypeSchema,
   dueDate: z.string().optional(), // yyyy-MM-dd, only for NONE
+  dueTime: z
+    .string()
+    .regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Enter a valid time.")
+    .optional()
+    .or(z.literal("")), // HH:mm, optional for any recurrence type
   daysOfWeek: z.array(z.number().int().min(0).max(6)).optional().default([]),
   daysOfMonth: z.array(z.number().int().min(1).max(31)).optional().default([]),
   planId: z.string().optional().or(z.literal("")),

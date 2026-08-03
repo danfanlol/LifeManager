@@ -10,6 +10,7 @@ type DeadlineWithPlan = DeadlineRecurrence & {
   id: string;
   title: string;
   description: string | null;
+  dueTime: string | null;
   lastCompletedPeriodKey: string | null;
   plan: { id: string; name: string } | null;
 };
@@ -77,7 +78,11 @@ export default async function DashboardPage() {
   const now = DateTime.now().setZone(timezone);
 
   const deadlines = await prisma.deadline.findMany({
-    where: { userId: session.user.id, isActive: true },
+    where: {
+      userId: session.user.id,
+      isActive: true,
+      OR: [{ planId: null }, { plan: { resolvedAt: null } }],
+    },
     include: { plan: { select: { id: true, name: true } } },
     orderBy: { createdAt: "asc" },
   });

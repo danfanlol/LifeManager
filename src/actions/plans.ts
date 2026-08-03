@@ -69,3 +69,29 @@ export async function deletePlan(planId: string) {
   revalidatePath("/plans");
   redirect("/plans");
 }
+
+export async function resolvePlan(planId: string) {
+  const session = await requireSession();
+
+  await prisma.plan.updateMany({
+    where: { id: planId, userId: session.user.id },
+    data: { resolvedAt: new Date() },
+  });
+
+  revalidatePath("/plans");
+  revalidatePath(`/plans/${planId}`);
+  revalidatePath("/dashboard");
+}
+
+export async function unresolvePlan(planId: string) {
+  const session = await requireSession();
+
+  await prisma.plan.updateMany({
+    where: { id: planId, userId: session.user.id },
+    data: { resolvedAt: null },
+  });
+
+  revalidatePath("/plans");
+  revalidatePath(`/plans/${planId}`);
+  revalidatePath("/dashboard");
+}

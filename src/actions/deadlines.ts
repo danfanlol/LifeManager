@@ -14,6 +14,7 @@ function readDeadlineForm(formData: FormData) {
     description: formData.get("description"),
     recurrenceType: formData.get("recurrenceType"),
     dueDate: formData.get("dueDate") || undefined,
+    dueTime: formData.get("dueTime") || undefined,
     daysOfWeek: formData.getAll("daysOfWeek").map(Number),
     daysOfMonth: formData.getAll("daysOfMonth").map(Number),
     planId: formData.get("planId") || undefined,
@@ -53,6 +54,7 @@ export async function createDeadline(_prevState: unknown, formData: FormData) {
       description: data.description || null,
       recurrenceType: data.recurrenceType,
       dueDate: data.recurrenceType === "NONE" ? toDueDateInput(data.dueDate) : null,
+      dueTime: data.dueTime || null,
       daysOfWeek: data.recurrenceType === "WEEKLY" || data.recurrenceType === "MULTI_WEEKLY"
         ? data.daysOfWeek
         : [],
@@ -107,6 +109,7 @@ export async function updateDeadline(
       description: data.description || null,
       recurrenceType: data.recurrenceType,
       dueDate: data.recurrenceType === "NONE" ? toDueDateInput(data.dueDate) : null,
+      dueTime: data.dueTime || null,
       daysOfWeek: data.recurrenceType === "WEEKLY" || data.recurrenceType === "MULTI_WEEKLY"
         ? data.daysOfWeek
         : [],

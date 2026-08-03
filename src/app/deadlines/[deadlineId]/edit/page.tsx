@@ -42,6 +42,7 @@ export default async function EditDeadlinePage({
           dueDate: deadline.dueDate
             ? DateTime.fromJSDate(deadline.dueDate, { zone: "utc" }).toISODate()
             : null,
+          dueTime: deadline.dueTime,
           daysOfWeek: deadline.daysOfWeek,
           daysOfMonth: deadline.daysOfMonth,
           planId: deadline.planId,

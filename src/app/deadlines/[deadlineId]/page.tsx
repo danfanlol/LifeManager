@@ -9,6 +9,7 @@ import {
   STATUS_STYLES,
   formatRecurrenceDetail,
   formatDueDate,
+  formatDueTime,
 } from "@/lib/deadline-display";
 import { toggleComplete, deleteDeadline } from "@/actions/deadlines";
 import { DeleteButton } from "@/components/DeleteButton";
@@ -75,6 +76,7 @@ export default async function TaskDetailPage({
           {deadline.recurrenceType === "NONE" && deadline.dueDate
             ? `Due ${formatDueDate(deadline.dueDate)}`
             : formatRecurrenceDetail(deadline)}
+          {deadline.dueTime && ` at ${formatDueTime(deadline.dueTime)}`}
         </p>
         {deadline.plan && (
           <p className="text-gray-500">

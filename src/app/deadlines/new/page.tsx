@@ -31,6 +31,7 @@ export default async function NewDeadlinePage({
                 description: "",
                 recurrenceType: "NONE",
                 dueDate: null,
+                dueTime: null,
                 daysOfWeek: [],
                 daysOfMonth: [],
                 planId,
