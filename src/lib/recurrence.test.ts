@@ -155,7 +155,12 @@ describe("getDeadlineStatus", () => {
   it("is dueToday when not yet completed for the current period", () => {
     const now = DateTime.fromISO("2026-07-29", { zone: "America/Los_Angeles" });
     const status = getDeadlineStatus(
-      { ...base({ recurrenceType: "DAILY" }), lastCompletedPeriodKey: null },
+      {
+        ...base({ recurrenceType: "DAILY" }),
+        dueTime: null,
+        lastCompletedPeriodKey: null,
+        lastMissedPeriodKey: null,
+      },
       now,
     );
     expect(status?.status).toBe("dueToday");
@@ -166,7 +171,9 @@ describe("getDeadlineStatus", () => {
     const status = getDeadlineStatus(
       {
         ...base({ recurrenceType: "DAILY" }),
+        dueTime: null,
         lastCompletedPeriodKey: "2026-07-29",
+        lastMissedPeriodKey: null,
       },
       now,
     );
@@ -178,7 +185,9 @@ describe("getDeadlineStatus", () => {
     const status = getDeadlineStatus(
       {
         ...base({ recurrenceType: "MONTHLY", daysOfMonth: [1] }),
+        dueTime: null,
         lastCompletedPeriodKey: null,
+        lastMissedPeriodKey: null,
       },
       now,
     );
@@ -191,10 +200,82 @@ describe("getDeadlineStatus", () => {
     const status = getDeadlineStatus(
       {
         ...base({ recurrenceType: "DAILY" }),
+        dueTime: null,
         lastCompletedPeriodKey: "2026-07-29",
+        lastMissedPeriodKey: null,
       },
       now,
     );
     expect(status?.status).toBe("dueToday");
+  });
+
+  it("is missed once lastMissedPeriodKey matches the current period", () => {
+    const now = DateTime.fromISO("2026-07-29", { zone: "America/Los_Angeles" });
+    const status = getDeadlineStatus(
+      {
+        ...base({ recurrenceType: "DAILY" }),
+        dueTime: null,
+        lastCompletedPeriodKey: null,
+        lastMissedPeriodKey: "2026-07-29",
+      },
+      now,
+    );
+    expect(status?.status).toBe("missed");
+  });
+
+  it("a stale miss from a prior period does not mark the new period missed", () => {
+    const now = DateTime.fromISO("2026-07-30", { zone: "America/Los_Angeles" });
+    const status = getDeadlineStatus(
+      {
+        ...base({ recurrenceType: "DAILY" }),
+        dueTime: null,
+        lastCompletedPeriodKey: null,
+        lastMissedPeriodKey: "2026-07-29",
+      },
+      now,
+    );
+    expect(status?.status).toBe("dueToday");
+  });
+
+  it("is dueToday when a due time exists but hasn't passed yet today", () => {
+    const now = DateTime.fromISO("2026-07-29T11:32", { zone: "America/Los_Angeles" });
+    const status = getDeadlineStatus(
+      {
+        ...base({ recurrenceType: "DAILY" }),
+        dueTime: "20:07",
+        lastCompletedPeriodKey: null,
+        lastMissedPeriodKey: null,
+      },
+      now,
+    );
+    expect(status?.status).toBe("dueToday");
+  });
+
+  it("is overdue once today's due time has passed", () => {
+    const now = DateTime.fromISO("2026-07-29T23:32", { zone: "America/Los_Angeles" });
+    const status = getDeadlineStatus(
+      {
+        ...base({ recurrenceType: "DAILY" }),
+        dueTime: "20:07",
+        lastCompletedPeriodKey: null,
+        lastMissedPeriodKey: null,
+      },
+      now,
+    );
+    expect(status?.status).toBe("overdue");
+  });
+
+  it("is overdue at the exact due time", () => {
+    const now = DateTime.fromISO("2026-07-29T20:07", { zone: "America/Los_Angeles" });
+    const status = getDeadlineStatus(
+      {
+        ...base({ recurrenceType: "DAILY" }),
+        dueTime: "20:07",
+        lastCompletedPeriodKey: null,
+        lastMissedPeriodKey: null,
+      },
+      now,
+    );
+    expect(status?.status).toBe("overdue");
   });
 });

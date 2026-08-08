@@ -9,7 +9,7 @@ export type DeadlineRecurrence = {
 };
 
 export type DeadlineStatus = {
-  status: "done" | "dueToday" | "overdue" | "upcoming";
+  status: "done" | "dueToday" | "overdue" | "upcoming" | "missed";
   periodKey: string;
   anchorDate: DateTime;
 };
@@ -40,6 +40,14 @@ function mostRecentWeekday(today: DateTime, jsWeekday: number): DateTime {
   const isoWeekday = jsWeekday === 0 ? 7 : jsWeekday;
   const diff = (today.weekday - isoWeekday + 7) % 7;
   return today.minus({ days: diff });
+}
+
+/** Whether `now` is at or past the deadline's `dueTime` ("HH:mm") on its anchor date. */
+function isPastDueTime(anchorDate: DateTime, dueTime: string | null, now: DateTime): boolean {
+  if (!dueTime) return false;
+  const [hour, minute] = dueTime.split(":").map(Number);
+  const anchorDateTime = anchorDate.set({ hour, minute, second: 0, millisecond: 0 });
+  return now >= anchorDateTime;
 }
 
 /**
@@ -137,7 +145,11 @@ export function periodKeyFor(anchorDate: DateTime): string {
 }
 
 export function getDeadlineStatus(
-  deadline: DeadlineRecurrence & { lastCompletedPeriodKey: string | null },
+  deadline: DeadlineRecurrence & {
+    dueTime: string | null;
+    lastCompletedPeriodKey: string | null;
+    lastMissedPeriodKey: string | null;
+  },
   nowInUserTz: DateTime,
 ): DeadlineStatus | null {
   const anchorDate = getEffectiveAnchorDate(deadline, nowInUserTz);
@@ -146,14 +158,19 @@ export function getDeadlineStatus(
   const today = nowInUserTz.startOf("day");
   const periodKey = periodKeyFor(anchorDate);
   const isCompleted = deadline.lastCompletedPeriodKey === periodKey;
+  const isMissed = deadline.lastMissedPeriodKey === periodKey;
 
   let status: DeadlineStatus["status"];
   if (isCompleted) {
     status = "done";
-  } else if (anchorDate.equals(today)) {
-    status = "dueToday";
+  } else if (isMissed) {
+    status = "missed";
   } else if (anchorDate < today) {
     status = "overdue";
+  } else if (anchorDate.equals(today)) {
+    // A due time that has already passed today tips it into overdue rather
+    // than sitting in "due today" until midnight.
+    status = isPastDueTime(anchorDate, deadline.dueTime, nowInUserTz) ? "overdue" : "dueToday";
   } else {
     status = "upcoming";
   }
@@ -167,7 +184,9 @@ export function withStatus<
     id: string;
     title: string;
     description: string | null;
+    dueTime: string | null;
     lastCompletedPeriodKey: string | null;
+    lastMissedPeriodKey: string | null;
   },
 >(deadlines: T[], nowInUserTz: DateTime): { deadline: T; status: DeadlineStatus }[] {
   return deadlines

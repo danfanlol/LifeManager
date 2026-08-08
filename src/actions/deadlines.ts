@@ -115,10 +115,12 @@ export async function updateDeadline(
         : [],
       daysOfMonth: data.recurrenceType === "MONTHLY" ? data.daysOfMonth : [],
       planId,
-      // Recurrence anchors may have changed, so any previous "done"/"notified"
-      // markers no longer refer to a meaningful period.
+      // Recurrence anchors may have changed, so any previous "done"/"missed"/
+      // "notified" markers no longer refer to a meaningful period.
       lastCompletedPeriodKey: null,
       lastCompletedAt: null,
+      lastMissedPeriodKey: null,
+      lastMissedAt: null,
       lastNotifiedPeriodKey: null,
     },
   });
@@ -173,4 +175,48 @@ export async function toggleComplete(deadlineId: string) {
 
   revalidatePath("/dashboard");
   if (deadline.planId) revalidatePath(`/plans/${deadline.planId}`);
+}
+
+export async function toggleMissed(deadlineId: string) {
+  const session = await requireSession();
+
+  const deadline = await prisma.deadline.findFirst({
+    where: { id: deadlineId, userId: session.user.id },
+  });
+  if (!deadline) return;
+
+  const timezone = (session.user as { timezone?: string }).timezone || "UTC";
+  const now = DateTime.now().setZone(timezone);
+
+  const anchor = getEffectiveAnchorDate(deadline, now);
+  if (!anchor) return;
+  const periodKey = periodKeyFor(anchor);
+
+  const isCurrentlyMissed = deadline.lastMissedPeriodKey === periodKey;
+
+  if (isCurrentlyMissed) {
+    await prisma.$transaction([
+      prisma.deadline.update({
+        where: { id: deadlineId },
+        data: { lastMissedPeriodKey: null, lastMissedAt: null },
+      }),
+      prisma.missedDeadline.deleteMany({ where: { deadlineId, periodKey } }),
+    ]);
+  } else {
+    await prisma.$transaction([
+      prisma.deadline.update({
+        where: { id: deadlineId },
+        data: { lastMissedPeriodKey: periodKey, lastMissedAt: new Date() },
+      }),
+      prisma.missedDeadline.upsert({
+        where: { deadlineId_periodKey: { deadlineId, periodKey } },
+        create: { userId: session.user.id, deadlineId, title: deadline.title, periodKey },
+        update: { title: deadline.title, missedAt: new Date() },
+      }),
+    ]);
+  }
+
+  revalidatePath("/dashboard");
+  if (deadline.planId) revalidatePath(`/plans/${deadline.planId}`);
+  revalidatePath(`/deadlines/${deadlineId}`);
 }

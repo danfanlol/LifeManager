@@ -12,6 +12,7 @@ type DeadlineWithPlan = DeadlineRecurrence & {
   description: string | null;
   dueTime: string | null;
   lastCompletedPeriodKey: string | null;
+  lastMissedPeriodKey: string | null;
   plan: { id: string; name: string } | null;
 };
 
@@ -94,14 +95,21 @@ export default async function DashboardPage() {
 
   // One-time deadlines completed, or due in the future, resolve directly to
   // "done"/"upcoming" from getDeadlineStatus. Recurring deadlines already
-  // done for their current period instead surface their *next* occurrence
-  // here, rather than sitting inert in "Done" until the period rolls over.
+  // done (or missed) for their current period instead surface their *next*
+  // occurrence here, rather than sitting inert until the period rolls over.
+  // One-time deadlines marked "missed" simply drop off the dashboard — no
+  // section below claims that status, though the miss is still logged
+  // (see MissedDeadline) and visible on the deadline's own page.
   const doneOneTime = entries.filter(
     (e) => e.status.status === "done" && e.deadline.recurrenceType === "NONE",
   );
   const upcomingOneTime = entries.filter((e) => e.status.status === "upcoming");
   const upcomingRecurring: Entry[] = entries
-    .filter((e) => e.status.status === "done" && e.deadline.recurrenceType !== "NONE")
+    .filter(
+      (e) =>
+        (e.status.status === "done" || e.status.status === "missed") &&
+        e.deadline.recurrenceType !== "NONE",
+    )
     .flatMap((e) => {
       const next = getNextAnchorDate(e.deadline, now);
       if (!next) return [];

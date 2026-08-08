@@ -11,7 +11,7 @@ import {
   formatDueDate,
   formatDueTime,
 } from "@/lib/deadline-display";
-import { toggleComplete, deleteDeadline } from "@/actions/deadlines";
+import { toggleComplete, toggleMissed, deleteDeadline } from "@/actions/deadlines";
 import { DeleteButton } from "@/components/DeleteButton";
 
 export default async function TaskDetailPage({
@@ -35,6 +35,8 @@ export default async function TaskDetailPage({
   const now = DateTime.now().setZone(timezone);
   const status = getDeadlineStatus(deadline, now);
   const isDone = status?.status === "done";
+  const isMissed = status?.status === "missed";
+  const canToggleMissed = status?.status === "overdue" || isMissed;
 
   const backHref = deadline.plan ? `/plans/${deadline.plan.id}` : "/dashboard";
   const backLabel = deadline.plan ? `Back to ${deadline.plan.name}` : "Back to dashboard";
@@ -88,17 +90,33 @@ export default async function TaskDetailPage({
         )}
       </div>
 
-      <div className="flex items-center gap-4">
-        <Link href={`/deadlines/${deadline.id}/edit`} className="text-sm underline">
+      <div className="flex items-center gap-3">
+        <Link
+          href={`/deadlines/${deadline.id}/edit`}
+          className="rounded border border-gray-300 px-3 py-2 text-sm font-medium hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900"
+        >
           Edit
         </Link>
+        {canToggleMissed && (
+          <form action={toggleMissed.bind(null, deadline.id)}>
+            <button
+              type="submit"
+              className="rounded border border-gray-300 px-3 py-2 text-sm font-medium hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900"
+            >
+              {isMissed ? "Unmark missed" : "Mark missed"}
+            </button>
+          </form>
+        )}
         <DeleteButton
           action={deleteDeadline.bind(null, deadline.id)}
           confirmMessage={`Delete "${deadline.title}"?`}
         />
       </div>
 
-      <Link href={backHref} className="text-sm underline">
+      <Link
+        href={backHref}
+        className="self-start rounded border border-gray-300 px-3 py-2 text-sm font-medium hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900"
+      >
         ← {backLabel}
       </Link>
     </div>

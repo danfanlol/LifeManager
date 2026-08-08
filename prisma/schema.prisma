@@ -38,6 +38,7 @@ model User {
   deadlines         Deadline[]
   pushSubscriptions PushSubscription[]
   hourLogs          HourLog[]
+  missedDeadlines   MissedDeadline[]
 }
 
 model Session {
@@ -129,6 +130,13 @@ model Deadline {
   lastCompletedPeriodKey String?
   lastCompletedAt        DateTime?
 
+  // Same current-period-only pattern for "couldn't complete it" — drives
+  // whether *this* occurrence is hidden from the dashboard. Unlike done/
+  // notified, missed occurrences are also durably logged (see
+  // MissedDeadline) so the record survives past the period rolling over.
+  lastMissedPeriodKey String?
+  lastMissedAt        DateTime?
+
   // Push-notification dedupe, same overwrite-per-period pattern (no log table).
   lastNotifiedPeriodKey String?
 
@@ -137,11 +145,31 @@ model Deadline {
   userId String
   user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  missedLogs MissedDeadline[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([userId])
   @@index([planId])
+}
+
+// Durable record of occurrences the user marked "missed" — kept even after
+// the deadline rolls into its next period (unlike Deadline.lastMissedPeriodKey,
+// which only reflects the *current* period). `title` is a snapshot so the
+// record still makes sense if the deadline is later renamed.
+model MissedDeadline {
+  id         String   @id @default(cuid())
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deadlineId String
+  deadline   Deadline @relation(fields: [deadlineId], references: [id], onDelete: Cascade)
+  title      String
+  periodKey  String
+  missedAt   DateTime @default(now())
+
+  @@unique([deadlineId, periodKey])
+  @@index([userId])
 }
 
 model PushSubscription {

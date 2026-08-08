@@ -6,6 +6,7 @@ export const STATUS_STYLES: Record<DeadlineStatus["status"], string> = {
   dueToday: "text-amber-600",
   upcoming: "text-gray-500",
   done: "text-green-600",
+  missed: "text-gray-400",
 };
 
 export const STATUS_LABELS: Record<DeadlineStatus["status"], string> = {
@@ -13,6 +14,7 @@ export const STATUS_LABELS: Record<DeadlineStatus["status"], string> = {
   dueToday: "Due today",
   upcoming: "Upcoming",
   done: "Done",
+  missed: "Missed",
 };
 
 export const RECURRENCE_LABELS: Record<string, string> = {

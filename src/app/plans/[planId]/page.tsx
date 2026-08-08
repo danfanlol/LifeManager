@@ -42,11 +42,17 @@ export default async function PlanDetailPage({
           )}
         </div>
         <div className="flex items-center gap-3">
-          <Link href={`/plans/${plan.id}/edit`} className="text-sm underline">
+          <Link
+            href={`/plans/${plan.id}/edit`}
+            className="rounded border border-gray-300 px-3 py-2 text-sm font-medium hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900"
+          >
             Edit
           </Link>
           <form action={(plan.resolvedAt ? unresolvePlan : resolvePlan).bind(null, plan.id)}>
-            <button type="submit" className="text-sm underline">
+            <button
+              type="submit"
+              className="rounded border border-gray-300 px-3 py-2 text-sm font-medium hover:bg-gray-50 dark:border-gray-700 dark:hover:bg-gray-900"
+            >
               {plan.resolvedAt ? "Unresolve" : "Resolve"}
             </button>
           </form>
